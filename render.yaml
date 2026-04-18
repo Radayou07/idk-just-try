@@ -7,7 +7,7 @@ projects:
     services:
     - type: web
       name: idk-just-try
-      runtime: docker
+      runtime: Node
       repo: https://github.com/Radayou07/idk-just-try
       plan: free
       region: oregon
