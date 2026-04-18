@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>📚 BookNotes</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ── CSS VARIABLES (easy theming) ── */
+    :root {
+      --bg:        #faf7f2;
+      --surface:   #ffffff;
+      --ink:       #1a1208;
+      --muted:     #7a6f62;
+      --accent:    #c0611a;
+      --accent2:   #2d6a4f;
+      --border:    #e8e0d4;
+      --shadow:    0 2px 16px rgba(0,0,0,0.07);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    header {
+      background: var(--ink);
+      color: #faf7f2;
+      padding: 2rem 2rem 1.6rem;
+      text-align: center;
+    }
+    header h1 {
+      font-family: 'Lora', serif;
+      font-size: 2.2rem;
+      letter-spacing: -0.5px;
+    }
+    header p {
+      margin-top: 0.4rem;
+      color: #b0a898;
+      font-size: 0.9rem;
+    }
+
+    /* ── LAYOUT ── */
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+    }
+
+    /* ── ARCHITECTURE BANNER ── */
+    .arch-banner {
+      background: #fff8f0;
+      border: 1.5px solid #f0d9c0;
+      border-radius: 10px;
+      padding: 1rem 1.4rem;
+      margin-bottom: 2rem;
+      font-size: 0.82rem;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+    }
+    .arch-banner strong { color: var(--accent); }
+    .arch-step {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 0.25rem 0.7rem;
+      font-weight: 500;
+    }
+    .arch-arrow { color: #c0a882; font-size: 1rem; }
+
+    /* ── FORM CARD ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.8rem;
+      box-shadow: var(--shadow);
+      margin-bottom: 2rem;
+    }
+    .card h2 {
+      font-family: 'Lora', serif;
+      font-size: 1.2rem;
+      margin-bottom: 1.2rem;
+      color: var(--ink);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    @media (max-width: 560px) { .form-row { grid-template-columns: 1fr; } }
+
+    label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--muted);
+      margin-bottom: 0.35rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    input, textarea, select {
+      width: 100%;
+      padding: 0.65rem 0.9rem;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      background: var(--bg);
+      color: var(--ink);
+      transition: border-color 0.2s;
+      outline: none;
+    }
+    input:focus, textarea:focus, select:focus {
+      border-color: var(--accent);
+      background: white;
+    }
+    textarea { resize: vertical; min-height: 80px; }
+
+    .btn {
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 0.7rem 1.6rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+    .btn:hover  { background: #a84e12; }
+    .btn:active { transform: scale(0.98); }
+
+    /* ── STATUS MESSAGE ── */
+    #status {
+      font-size: 0.85rem;
+      margin-left: 1rem;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    #status.show { opacity: 1; }
+    #status.ok  { color: var(--accent2); }
+    #status.err { color: #c0392b; }
+
+    /* ── BOOK LIST ── */
+    .section-title {
+      font-family: 'Lora', serif;
+      font-size: 1.15rem;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .count-badge {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.75rem;
+      background: var(--ink);
+      color: white;
+      border-radius: 20px;
+      padding: 0.1rem 0.55rem;
+    }
+
+    #book-list {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .book-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.2rem 1.4rem;
+      box-shadow: var(--shadow);
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+      animation: slideIn 0.3s ease;
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .book-icon {
+      font-size: 1.8rem;
+      flex-shrink: 0;
+      margin-top: 0.1rem;
+    }
+    .book-body { flex: 1; }
+    .book-title {
+      font-family: 'Lora', serif;
+      font-size: 1.05rem;
+      font-weight: 600;
+    }
+    .book-author {
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin: 0.15rem 0 0.5rem;
+    }
+    .book-note {
+      font-size: 0.88rem;
+      color: #4a4035;
+      font-style: italic;
+      margin-bottom: 0.5rem;
+    }
+    .book-meta {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+    .stars { color: #e0a000; font-size: 0.9rem; }
+    .book-date { font-size: 0.75rem; color: #b0a898; }
+
+    .delete-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #c0a882;
+      font-size: 1.1rem;
+      padding: 0.2rem;
+      transition: color 0.2s;
+      flex-shrink: 0;
+    }
+    .delete-btn:hover { color: #c0392b; }
+
+    /* ── EMPTY STATE ── */
+    .empty {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--muted);
+    }
+    .empty .emoji { font-size: 2.5rem; margin-bottom: 0.8rem; }
+
+    /* ── CODE NOTE ── */
+    .code-note {
+      background: #1a1208;
+      color: #d4c9b8;
+      border-radius: 10px;
+      padding: 1.2rem 1.4rem;
+      font-family: 'Courier New', monospace;
+      font-size: 0.8rem;
+      line-height: 1.7;
+      margin-top: 2.5rem;
+    }
+    .code-note .comment { color: #7a9e7e; }
+    .code-note .keyword { color: #e0a000; }
+    .code-note .string  { color: #d08060; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>📚 BookNotes</h1>
+  <p>A full-stack mini app — Frontend · Backend · Database</p>
+</header>
+
+<div class="container">
+
+  <!-- HOW IT WORKS BANNER -->
+  <div class="arch-banner">
+    <strong>How this page works:</strong>
+    <span class="arch-step">🖥️ Frontend (this page)</span>
+    <span class="arch-arrow">→</span>
+    <span class="arch-step">⚙️ Backend (Node.js)</span>
+    <span class="arch-arrow">→</span>
+    <span class="arch-step">🗄️ Database (SQLite)</span>
+    <span class="arch-arrow">→ response flows back ←</span>
+  </div>
+
+  <!-- ADD BOOK FORM -->
+  <div class="card">
+    <h2>Add a book you've read</h2>
+    <div class="form-row">
+      <div>
+        <label for="title">Book Title</label>
+        <input id="title" type="text" placeholder="e.g. Atomic Habits" />
+      </div>
+      <div>
+        <label for="author">Author</label>
+        <input id="author" type="text" placeholder="e.g. James Clear" />
+      </div>
+    </div>
+    <div style="margin-bottom:1rem">
+      <label for="note">Your Note</label>
+      <textarea id="note" placeholder="What did you learn from this book?"></textarea>
+    </div>
+    <div style="margin-bottom:1.4rem; max-width:200px">
+      <label for="rating">Rating</label>
+      <select id="rating">
+        <option value="5">⭐⭐⭐⭐⭐ Amazing</option>
+        <option value="4">⭐⭐⭐⭐ Great</option>
+        <option value="3" selected>⭐⭐⭐ Good</option>
+        <option value="2">⭐⭐ Okay</option>
+        <option value="1">⭐ Meh</option>
+      </select>
+    </div>
+    <div style="display:flex; align-items:center">
+      <button class="btn" onclick="addBook()">Save Book</button>
+      <span id="status"></span>
+    </div>
+  </div>
+
+  <!-- BOOK LIST -->
+  <div class="section-title">
+    My Reading List
+    <span class="count-badge" id="count">0</span>
+  </div>
+  <div id="book-list"></div>
+
+  <!-- CODE EXPLANATION -->
+  <div class="code-note">
+    <div class="comment">// ── HOW FRONTEND TALKS TO BACKEND ──────────────</div>
+    <br>
+    <div><span class="keyword">const</span> response = <span class="keyword">await</span> fetch(<span class="string">"http://localhost:3000/books"</span>, {</div>
+    <div>&nbsp;&nbsp;method: <span class="string">"POST"</span>,</div>
+    <div>&nbsp;&nbsp;headers: { <span class="string">"Content-Type"</span>: <span class="string">"application/json"</span> },</div>
+    <div>&nbsp;&nbsp;body: JSON.stringify({ title, author, note, rating })</div>
+    <div>});</div>
+    <br>
+    <div class="comment">// fetch() sends data to the backend URL</div>
+    <div class="comment">// The backend saves it to the database</div>
+    <div class="comment">// Then returns the saved book as JSON</div>
+    <div class="comment">// The frontend reads it and updates the page</div>
+  </div>
+
+</div><!-- /container -->
+
+
+<!-- ============================================
+     FRONTEND JAVASCRIPT
+     This is where the frontend talks to backend!
+     ============================================ -->
+<script>
+  // The backend URL — change this when you deploy!
+  const API = "http://localhost:3000";
+
+  // ── LOAD ALL BOOKS on page start ──────────────
+  async function loadBooks() {
+    try {
+      // 1. Ask the backend for all books
+      const res = await fetch(`${API}/books`);
+
+      // 2. Parse the JSON response
+      const books = await res.json();
+
+      // 3. Render them on the page
+      renderBooks(books);
+    } catch (err) {
+      // If backend is offline, show a demo message
+      renderOfflineDemo();
+    }
+  }
+
+  // ── ADD A BOOK ────────────────────────────────
+  async function addBook() {
+    const title  = document.getElementById("title").value.trim();
+    const author = document.getElementById("author").value.trim();
+    const note   = document.getElementById("note").value.trim();
+    const rating = document.getElementById("rating").value;
+
+    if (!title || !author) {
+      showStatus("Please fill in title and author!", "err");
+      return;
+    }
+
+    try {
+      // Send book data to backend via HTTP POST
+      const res = await fetch(`${API}/books`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, author, note, rating: parseInt(rating) })
+      });
+
+      if (!res.ok) throw new Error("Server error");
+
+      // Clear the form
+      document.getElementById("title").value  = "";
+      document.getElementById("author").value = "";
+      document.getElementById("note").value   = "";
+
+      showStatus("✓ Saved!", "ok");
+      loadBooks(); // Refresh the list
+
+    } catch (err) {
+      showStatus("Cannot connect to backend. Is server.js running?", "err");
+    }
+  }
+
+  // ── DELETE A BOOK ─────────────────────────────
+  async function deleteBook(id) {
+    try {
+      await fetch(`${API}/books/${id}`, { method: "DELETE" });
+      loadBooks(); // Refresh after delete
+    } catch (err) {
+      alert("Cannot connect to backend.");
+    }
+  }
+
+  // ── RENDER BOOKS (HTML generation) ───────────
+  function renderBooks(books) {
+    const list  = document.getElementById("book-list");
+    const count = document.getElementById("count");
+    count.textContent = books.length;
+
+    if (books.length === 0) {
+      list.innerHTML = `
+        <div class="empty">
+          <div class="emoji">📖</div>
+          <p>No books yet — add your first one above!</p>
+        </div>`;
+      return;
+    }
+
+    list.innerHTML = books.map(book => `
+      <div class="book-card">
+        <div class="book-icon">📗</div>
+        <div class="book-body">
+          <div class="book-title">${escHtml(book.title)}</div>
+          <div class="book-author">by ${escHtml(book.author)}</div>
+          ${book.note ? `<div class="book-note">"${escHtml(book.note)}"</div>` : ""}
+          <div class="book-meta">
+            <span class="stars">${"⭐".repeat(book.rating || 3)}</span>
+            <span class="book-date">${formatDate(book.created_at)}</span>
+          </div>
+        </div>
+        <button class="delete-btn" onclick="deleteBook(${book.id})" title="Delete">✕</button>
+      </div>
+    `).join("");
+  }
+
+  // ── OFFLINE DEMO (when no backend) ───────────
+  function renderOfflineDemo() {
+    renderBooks([
+      { id:1, title:"Atomic Habits",       author:"James Clear",   note:"Small changes compound into remarkable results.", rating:5, created_at: new Date() },
+      { id:2, title:"The Pragmatic Programmer", author:"Hunt & Thomas", note:"Think about your work.",                    rating:4, created_at: new Date() }
+    ]);
+    document.getElementById("count").textContent = "demo";
+  }
+
+  // ── HELPERS ───────────────────────────────────
+  function showStatus(msg, type) {
+    const el = document.getElementById("status");
+    el.textContent = msg;
+    el.className = `show ${type}`;
+    setTimeout(() => el.className = "", 3000);
+  }
+
+  function escHtml(str) {
+    return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  }
+
+  function formatDate(d) {
+    return new Date(d).toLocaleDateString("en-US", { month:"short", day:"numeric", year:"numeric" });
+  }
+
+  // Load books when page opens
+  loadBooks();
+</script>
+</body>
+</html>
