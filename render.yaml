@@ -1,1 +1,16 @@
-
+# Exported from Render on 2026-04-18T04:10:25Z
+version: "1"
+projects:
+- name: My project
+  environments:
+  - name: Production
+    services:
+    - type: web
+      name: idk-just-try
+      runtime: docker
+      repo: https://github.com/Radayou07/idk-just-try
+      plan: free
+      region: oregon
+      dockerContext: .
+      dockerfilePath: ./Dockerfile
+      autoDeployTrigger: commit
